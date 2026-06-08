@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAPI Kostick — Tes Kepribadian Kerja</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#17172b;--ink2:#4a4a68;--ink3:#8888aa;
+  --bg:#f0eff8;--surf:#ffffff;
+  --acc:#4338ca;--acc2:#7c3aed;--acc-light:#eef0ff;
+  --ok:#047857;--ok-l:#d1fae5;
+  --err:#b91c1c;--err-l:#fee2e2;
+  --bdr:#e0dff5;--r:14px;--r2:9px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;padding-bottom:5rem}
+
+/* ── Header ── */
+.hdr{background:var(--ink);position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 90% 70% at 80% 50%,rgba(124,58,237,.4),transparent 65%);pointer-events:none}
+.hdr-in{max-width:700px;margin:0 auto;padding:3rem 1.5rem 2.5rem;position:relative;z-index:1}
+.badge{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.8);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:5px 14px;border-radius:99px;margin-bottom:1.1rem}
+.badge::before{content:'';width:6px;height:6px;background:#a78bfa;border-radius:50%}
+.hdr-title{font-family:'Playfair Display',serif;font-size:clamp(28px,5.5vw,42px);font-weight:400;color:#fff;line-height:1.12;margin-bottom:.6rem}
+.hdr-title em{font-style:italic;color:#c4b5fd}
+.hdr-sub{font-size:13.5px;color:rgba(255,255,255,.55);font-weight:300;line-height:1.65;max-width:480px}
+.hdr-pills{display:flex;flex-wrap:wrap;gap:10px;margin-top:1.4rem}
+.pill{display:flex;align-items:center;gap:6px;font-size:11.5px;color:rgba(255,255,255,.65);background:rgba(255,255,255,.07);padding:5px 12px;border-radius:99px;border:1px solid rgba(255,255,255,.12)}
+
+/* ── Sticky progress ── */
+.prog-bar{position:sticky;top:0;z-index:100;background:rgba(240,239,248,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--bdr);padding:.6rem 1.5rem}
+.prog-in{max-width:700px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.prog-track{flex:1;height:5px;background:var(--bdr);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:99px;width:0%;transition:width .3s}
+.prog-pct{font-size:12px;font-weight:600;color:var(--acc);min-width:36px}
+.prog-txt{font-size:11.5px;color:var(--ink2);white-space:nowrap;min-width:76px;text-align:right}
+
+/* ── Main ── */
+.main{max-width:700px;margin:0 auto;padding:1.75rem 1.5rem 0}
+
+/* ── Cards ── */
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:1.5rem;margin-bottom:1.25rem;box-shadow:0 1px 4px rgba(67,56,202,.06)}
+
+/* ── Identity ── */
+.id-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:.875rem}
+.id-full{grid-column:1/-1}
+.id-lbl{font-size:11.5px;font-weight:600;color:var(--ink3);margin-bottom:4px}
+.id-inp{width:100%;padding:.55rem .85rem;border:1.5px solid var(--bdr);border-radius:var(--r2);font-family:'Plus Jakarta Sans',sans-serif;font-size:13.5px;color:var(--ink);background:var(--bg);transition:border-color .15s,box-shadow .15s}
+.id-inp:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px rgba(67,56,202,.1)}
+
+/* ── Instructions ── */
+.instr-hd{display:flex;align-items:center;gap:10px;margin-bottom:.875rem}
+.instr-ico{width:34px;height:34px;background:var(--acc-light);border-radius:var(--r2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.instr-ol{padding:0;list-style:none;display:flex;flex-direction:column;gap:.55rem}
+.instr-ol li{display:flex;gap:10px;font-size:13px;line-height:1.6;color:var(--ink2);align-items:flex-start}
+.step-n{min-width:20px;height:20px;border-radius:50%;background:var(--acc);color:#fff;font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.warn-box{display:flex;gap:10px;background:#fffbeb;border:1px solid #fcd34d;border-radius:var(--r2);padding:.75rem 1rem;margin-top:.875rem;font-size:12.5px;color:#78350f;line-height:1.55}
+
+/* ── Section ── */
+.sec-hd{display:flex;align-items:center;gap:12px;margin:1.75rem 0 .875rem}
+.sec-hd span{font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3);white-space:nowrap}
+.sec-hd::after{content:'';flex:1;height:1px;background:var(--bdr)}
+
+/* ── Question ── */
+.qcard{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r);padding:1.25rem 1.25rem .875rem;margin-bottom:.625rem;box-shadow:0 1px 3px rgba(67,56,202,.04);transition:border-color .18s,box-shadow .18s}
+.qcard.ok{border-color:#6ee7b7;box-shadow:0 0 0 3px rgba(4,120,87,.07)}
+.qcard.err{border-color:#fca5a5;background:#fff9f9;animation:shake .3s ease}
+@keyframes shake{20%{transform:translateX(-4px)}60%{transform:translateX(4px)}100%{transform:translateX(0)}}
+.qtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+.qnum{font-size:10.5px;font-weight:600;color:var(--ink3);letter-spacing:.05em;text-transform:uppercase}
+.qtick{width:20px;height:20px;border-radius:50%;background:var(--ok-l);display:none;align-items:center;justify-content:center}
+.qcard.ok .qtick{display:flex}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;align-items:flex-start;gap:10px;padding:.7rem .875rem;border-radius:var(--r2);border:1.5px solid var(--bdr);cursor:pointer;transition:all .14s;background:#faf9fd;user-select:none}
+.opt:hover{border-color:#a5b4fc;background:#f5f4ff;box-shadow:0 2px 8px rgba(67,56,202,.09)}
+.opt input{display:none}
+.opt.sel{background:var(--acc-light);border-color:var(--acc);box-shadow:0 2px 8px rgba(67,56,202,.13)}
+.obadge{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--bdr);background:var(--surf);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--ink3);flex-shrink:0;margin-top:1px;transition:all .14s}
+.opt.sel .obadge{background:var(--acc);border-color:var(--acc);color:#fff}
+.otxt{font-size:13.5px;line-height:1.55;color:var(--ink2);transition:color .14s}
+.opt.sel .otxt{color:var(--ink)}
+
+/* ── Submit ── */
+.sub-wrap{margin-top:2rem}
+.err-msg{display:none;align-items:center;gap:10px;background:var(--err-l);border:1px solid #fca5a5;border-radius:var(--r2);padding:.75rem 1rem;font-size:13px;color:var(--err);margin-bottom:.875rem}
+.btn-sub{width:100%;padding:.95rem;background:var(--acc);color:#fff;border:none;border-radius:var(--r);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 4px 16px rgba(67,56,202,.32);transition:all .2s}
+.btn-sub:hover{background:#3730a3;box-shadow:0 6px 22px rgba(67,56,202,.4);transform:translateY(-1px)}
+
+/* ── Result ── */
+#result{display:none;max-width:700px;margin:2rem auto;padding:0 1.5rem 4rem}
+.res-hero{background:var(--ink);border-radius:var(--r);padding:2.25rem 1.5rem;text-align:center;color:#fff;margin-bottom:1.25rem;position:relative;overflow:hidden}
+.res-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 70% at 50% 50%,rgba(124,58,237,.45),transparent 65%)}
+.res-hero>*{position:relative;z-index:1}
+.res-tick{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.13);border:2px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:28px}
+.res-hero h2{font-family:'Playfair Display',serif;font-size:26px;font-weight:400;margin-bottom:.4rem}
+.res-hero p{font-size:13px;color:rgba(255,255,255,.6);font-weight:300}
+
+.res-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.stat{background:var(--bg);border-radius:var(--r2);padding:.875rem 1rem;text-align:center}
+.stat .sv{font-size:28px;font-weight:600;color:var(--ink)}
+.stat .sl{font-size:11.5px;color:var(--ink3);margin-top:2px}
+
+.how-list{list-style:none;counter-reset:s;margin-bottom:1.1rem}
+.how-list li{counter-increment:s;display:flex;gap:10px;font-size:13px;color:var(--ink2);padding:.45rem 0;border-bottom:1px solid var(--bdr);align-items:flex-start}
+.how-list li:last-child{border:none}
+.how-list li::before{content:counter(s);min-width:22px;height:22px;border-radius:50%;background:var(--acc);color:#fff;font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+
+.btn-dl{width:100%;padding:.9rem;background:#047857;color:#fff;border:none;border-radius:var(--r);font-family:'Plus Jakarta Sans',sans-serif;font-size:14.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:.75rem;box-shadow:0 4px 14px rgba(4,120,87,.28);transition:all .2s}
+.btn-dl:hover{background:#065f46;transform:translateY(-1px);box-shadow:0 6px 18px rgba(4,120,87,.35)}
+.btn-rst{width:100%;padding:.75rem;background:transparent;border:1.5px solid var(--bdr);border-radius:var(--r);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:500;color:var(--ink2);cursor:pointer;transition:all .2s}
+.btn-rst:hover{border-color:var(--acc);color:var(--acc);background:var(--acc-light)}
+
+.ans-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:5px;margin-top:.75rem}
+.ac{background:var(--bg);border:1px solid var(--bdr);border-radius:7px;text-align:center;padding:5px 3px}
+.ac .cn{display:block;font-size:9.5px;color:var(--ink3)}
+.ac .cv{display:block;font-size:13px;font-weight:600;color:var(--ink)}
+
+@media(max-width:520px){
+  .hdr-in,.main{padding-left:1rem;padding-right:1rem}
+  .id-grid{grid-template-columns:1fr}
+  .id-full{grid-column:auto}
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <div class="badge">Psikotes Kepribadian Kerja</div>
+    <h1 class="hdr-title">PAPI <em>Kostick</em></h1>
+    <p class="hdr-sub">Personality and Preference Inventory — memahami gaya kerja, motivasi, dan pola perilaku Anda. Selesaikan semua soal, lalu unduh hasil lengkap sebagai file Excel.</p>
+    <div class="hdr-pills">
+      <div class="pill"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>90 Pertanyaan</div>
+      <div class="pill"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Tidak ada batas waktu</div>
+      <div class="pill"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Hasil langsung di Excel</div>
+    </div>
+  </div>
+</header>
+
+<div class="prog-bar">
+  <div class="prog-in">
+    <span class="prog-pct" id="pp">0%</span>
+    <div class="prog-track"><div class="prog-fill" id="pf"></div></div>
+    <span class="prog-txt" id="pt">0 / 90</span>
+  </div>
+</div>
+
+<div id="formWrap">
+<main class="main">
+
+  <div class="card" style="margin-top:1.5rem">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:.25rem">
+      <div style="width:32px;height:32px;background:#eef0ff;border-radius:8px;display:flex;align-items:center;justify-content:center">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#4338ca" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <span style="font-size:14px;font-weight:600">Data Peserta</span>
+    </div>
+    <div class="id-grid">
+      <div class="id-full"><div class="id-lbl">Nama Lengkap *</div><input class="id-inp" id="fnama" placeholder="Ketik nama lengkap" type="text"></div>
+      <div><div class="id-lbl">Tanggal Tes</div><input class="id-inp" id="ftgl" type="date"></div>
+      <div><div class="id-lbl">Posisi / Jabatan</div><input class="id-inp" id="fposisi" placeholder="Posisi yang dilamar" type="text"></div>
+      <div class="id-full"><div class="id-lbl">Assessor</div><input class="id-inp" id="fassessor" placeholder="Nama penilai" type="text"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="instr-hd">
+      <div class="instr-ico"><svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="#4338ca" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+      <span style="font-size:14.5px;font-weight:600">Cara Mengerjakan</span>
+    </div>
+    <ol class="instr-ol">
+      <li><span class="step-n">1</span><span>Setiap nomor berisi <strong>dua pernyataan A dan B</strong>. Baca keduanya sebelum memilih.</span></li>
+      <li><span class="step-n">2</span><span>Pilih <strong>pernyataan yang paling mencerminkan diri Anda saat ini</strong> — bukan yang ideal.</span></li>
+      <li><span class="step-n">3</span><span>Jika keduanya tidak cocok, tetap pilih yang <em>paling mendekati</em>. Jika keduanya cocok, pilih yang <em>paling dominan</em>.</span></li>
+      <li><span class="step-n">4</span><span><strong>Semua 90 soal wajib dijawab.</strong> Setelah selesai, klik Kirim untuk mengunduh hasil Excel lengkap.</span></li>
+    </ol>
+    <div class="warn-box">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#92400e" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+      <span>Jawab sesuai <strong>kondisi nyata</strong> anda, bukan gambaran ideal. Tidak ada jawaban benar atau salah.</span>
+    </div>
+  </div>
+
+  <div id="qwrap"></div>
+
+  <div class="sub-wrap">
+    <div class="err-msg" id="errMsg">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="flex-shrink:0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="errTxt">Ada soal yang belum dijawab.</span>
+    </div>
+    <button class="btn-sub" onclick="submit()">
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+      Kirim & Unduh Hasil Excel
+    </button>
+  </div>
+</main>
+</div>
+
+<!-- RESULT -->
+<div id="result">
+  <div class="res-hero">
+    <div class="res-tick">✓</div>
+    <h2>Jawaban Lengkap!</h2>
+    <p id="rname">Semua 90 pertanyaan telah diisi.</p>
+  </div>
+
+  <div class="card">
+    <div class="res-stats">
+      <div class="stat"><div class="sv" id="cntA">—</div><div class="sl">Memilih A</div></div>
+      <div class="stat"><div class="sv" id="cntB">—</div><div class="sl">Memilih B</div></div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem">Rekap Jawaban</div>
+    <div class="ans-grid" id="ag"></div>
+  </div>
+
+  <div class="card">
+    <div style="font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.75rem">Cara Membuka Hasil</div>
+    <ol class="how-list">
+      <li>Klik <strong>Unduh Hasil Excel</strong> di bawah — file akan otomatis terunduh ke komputer Anda.</li>
+      <li>Buka file <strong>PAPI_Kostick_[Nama]_Hasil.xlsx</strong> menggunakan Microsoft Excel atau Google Sheets.</li>
+      <li>Sheet <strong>"Skor"</strong> menampilkan 20 skala dengan skor, persentase, dan interpretasi otomatis.</li>
+      <li>Sheet <strong>"Grafik"</strong> menampilkan bar chart profil kepribadian lengkap.</li>
+      <li>Sheet <strong>"Summary"</strong> menyajikan laporan ringkas dan panduan interpretasi.</li>
+    </ol>
+    <button class="btn-dl" id="btnDl" onclick="dlExcel()">
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Unduh Hasil Excel
+    </button>
+    <button class="btn-rst" onclick="resetAll()">↺ &nbsp;Ulangi dari Awal</button>
+  </div>
+</div>
+
+<!-- SheetJS for Excel generation in-browser -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+const QQ=[
+["Saya seorang pekerja giat","Saya bukan seorang pemurung"],
+["Saya suka bekerja lebih baik dari yang lain","Saya melakukan pekerjaan hingga tuntas"],
+["Saya suka memberi orang petunjuk bagaimana melakukan sesuatu","Saya senang memberitahukan orang apa yang harus dikerjakan"],
+["Saya suka melakukan atau mengatakan hal-hal lucu","Saya senang memberitahukan orang apa yang harus dikerjakan"],
+["Saya suka menggabungkan diri dalam kelompok","Saya ingin diperhatikan dalam kelompok"],
+["Saya suka menjalin persahabatan","Saya suka menggabungkan diri dalam suatu kelompok"],
+["Jika saya rasa perlu saya bisa cepat menyesuaikan diri","Saya berusaha menjalin persahabatan"],
+["Saya akan membalas jika saya disakiti","Saya suka melakukan hal-hal baru dan berbeda"],
+["Saya ingin atasan menyukai saya","Saya suka memberitahukan orang jika mereka bersalah"],
+["Saya suka mengikuti petunjuk yang diberikan kepada saya","Saya suka membuat atasan senang"],
+["Saya berusaha keras sekali","Saya seorang yang rapih"],
+["Saya dapat membuat orang melakukan apa yang saya inginkan","Saya tidak mudah marah"],
+["Saya suka memberitahu kelompok apa yang harus mereka kerjakan","Saya selalu melakukan pekerjaan sampai tuntas"],
+["Saya ingin menjadi orang yang menarik dan mengasyikan","Saya ingin menjadi orang yang sangat berhasil"],
+["Saya ingin dapat menyesuaikan diri dengan kelompok-kelompok","Saya suka membantu orang mengambil keputusan"],
+["Saya cemas bila seseorang tidak menyukai saya","Saya suka orang memperhatikan saya"],
+["Saya suka mencoba hal-hal baru","Saya lebih suka bekerja sama daripada bekerja sendiri"],
+["Kadang-kadang saya menyalahkan orang lain jika ada yang tidak beres","Saya merasa terganggu bila ada yang tidak menyukai saya"],
+["Saya suka menyenangkan atasan","Saya suka mencoba pekerjaan-pekerjaan yang baru dan berbeda"],
+["Saya menyukai petunjuk-petunjuk yang rinci dalam menyelesaikan pekerjaan","Akan saya katakan kepada orang yang bersangkutan bila mereka menjengkelkan saya"],
+["Saya selalu berusaha keras","Saya suka melaksanakan setiap langkah dengan hati-hati"],
+["Saya akan menjadi seorang pemimpin yang baik","Saya dapat mengorganisir suatu pekerjaan dengan baik"],
+["Saya mudah tersinggung","Saya lambat dalam membuat keputusan"],
+["Saya suka mengerjakan beberapa pekerjaan sekaligus","Bila saya dalam kelompok saya lebih sering sebagai pendengar"],
+["Saya sangat senang bila mendapat undangan","Saya ingin lebih baik dari yang lain dalam mengerjakan sesuatu"],
+["Saya suka menjalin persahabatan","Saya suka menasehati orang lain"],
+["Saya suka melakukan hal-hal baru dan berbeda","Saya suka memberitahu bagaimana saya berhasil dalam melakukan sesuatu"],
+["Bila pendapat saya benar saya akan pertahankan","Saya ingin diterima dan diakui dalam kelompok"],
+["Saya tak mau menjadi lain dari yang lain","Saya berusaha dekat dengan orang-orang"],
+["Saya senang memberitahu orang bagaimana melakukan suatu pekerjaan","Saya berusaha dekat dengan orang-orang"],
+["Saya bekerja keras","Saya banyak berfikir dan membuat perencanaan"],
+["Saya memimpin kelompok","Saya tertarik dengan hal-hal yang lebih detail"],
+["Saya mengambil keputusan dengan mudah dan cepat","Saya menyimpan barang-barang dengan rapih dan teratur"],
+["Saya melakukan pekerjaan dengan cepat","Saya tidak sering marah atau sedih"],
+["Saya ingin menjadi bagian dari kelompok","Saya hanya ingin melakukan pekerjaan pada satu waktu"],
+["Saya berusaha menjalin persahabatan","Saya berusaha keras menjadi yang terbaik"],
+["Saya suka mode terbaru untuk pakaian","Saya suka diberi tanggung jawab"],
+["Saya menyukai perdebatan","Saya senang mendapat perhatian"],
+["Saya suka menyenangkan atasan","Saya tertarik menjadi bagian dalam kelompok"],
+["Saya sangat memperhatikan peraturan","Saya ingin orang mengenal saya dengan baik"],
+["Saya berusaha keras sekali","Saya sangat ramah"],
+["Orang berpendapat saya memimpin dengan baik","Saya berfikir lama dan berhati-hati"],
+["Bila ada kesempatan saya akan memanfaatkannya","Saya senang menangani hal-hal kecil"],
+["Orang berpendapat bahwa saya bekerja cepat","Orang berpendapat bahwa saya rapi dan teratur"],
+["Saya senang mengikuti pertandingan dan berolahraga","Saya memiliki kepribadian yang menyenangkan"],
+["Saya senang jika orang dekat dan bersahabat dengan saya","Saya selalu berusaha menyelesaikan sesuatu yang telah saya mulai"],
+["Saya senang bereksperimen dan mencoba hal-hal baru","Saya suka mengerjakan pekerjaan yang sulit-sulit"],
+["Saya suka diperlakukan dengan adil","Saya suka memberitahu orang lain bagaimana melaksanakan sesuatu"],
+["Saya suka melakukan apa yang diharapkan orang dari saya","Saya suka jika orang peduli terhadap saya"],
+["Saya suka diterangkan tugas saya sedetail-detailnya","Saya senang berada bersama orang-orang"],
+["Saya selalu berusaha menyelesaikan pekerjaan dengan sempurna","Orang mengatakan bahwa saya hampir-hampir tidak pernah lelah"],
+["Saya tipe pemimpin","Saya mudah bergaul"],
+["Saya gunakan kesempatan","Saya banyak sekali berfikir"],
+["Saya bekerja dengan tempo yang tinggi dan mantap","Saya senang menangani detail suatu pekerjaan"],
+["Saya memiliki banyak tenaga untuk kegiatan dan berolahraga","Saya mengatur dan menyimpan barang dengan teratur dan rapi"],
+["Saya dapat bergaul baik dengan semua orang","Saya orang yang berwatak tenang"],
+["Saya ingin bertemu dengan orang-orang baru dan melakukan hal-hal baru","Saya selalu ingin menyelesaikan pekerjaan yang telah saya mulai"],
+["Saya biasanya mempertahankan pendapat yang saya yakini","Saya biasanya suka bekerja keras"],
+["Saya menyambut baik saran-saran dari orang yang saya kagumi","Saya suka bertanggung jawab terhadap orang lain"],
+["Saya membiarkan diri saya dipengaruhi dengan kuat oleh orang lain","Saya senang bila memperoleh banyak perhatian"],
+["Biasanya saya bekerja keras sekali","Biasanya saya bekerja cepat"],
+["Apabila saya bicara kelompok diam dan mendengarkan","Saya terampil menggunakan perkakas"],
+["Saya lambat dalam membuat persahabatan","Saya lambat dalam mengambil keputusan"],
+["Biasanya saya makan dengan cepat","Saya suka membaca"],
+["Saya suka pekerjaan dimana saya banyak bergerak","Saya suka pekerjaan yang harus dilaksanakan dengan hati-hati"],
+["Saya mudah membuat sebanyak mungkin teman","Saya mudah menemukan kembali barang-barang yang saya simpan"],
+["Saya membuat rencana jauh-jauh sebelumnya","Saya selalu menyenangkan"],
+["Saya menjunjung tinggi nama baik saya","Saya terus menekuni suatu masalah sampai tuntas"],
+["Saya suka menyenangkan orang-orang yang saya kagumi","Saya ingin sukses"],
+["Saya suka orang lain mengambil keputusan untuk kelompok","Saya suka mengambil keputusan untuk kelompok"],
+["Saya selalu berusaha keras","Saya mengambil keputusan secara cepat dan mudah"],
+["Kelompok biasanya melakukan apa yang saya inginkan","Saya biasanya bekerja cepat-cepat"],
+["Saya sering merasa lelah","Saya lambat dalam mengambil keputusan"],
+["Saya bekerja cepat","Saya mudah berteman"],
+["Saya biasanya mempunyai gairah dan tenaga","Saya banyak menghabiskan waktu untuk berfikir"],
+["Saya sangat ramah terhadap orang","Saya suka pekerjaan yang memerlukan ketelitian"],
+["Saya banyak berfikir dan membuat perencanaan","Saya menyimpan sesuatu pada tempatnya"],
+["Saya suka pekerjaan yang menuntut perhatian terhadap hal detail","Saya tidak mudah marah"],
+["Saya suka menuruti orang yang saya kagumi","Saya selalu menyelesaikan pekerjaan yang telah saya mulai"],
+["Saya suka petunjuk-petunjuk yang jelas","Saya suka bekerja keras"],
+["Saya mengejar apa yang saya inginkan","Saya seorang pemimpin yang baik"],
+["Saya dapat membuat orang lain bekerja keras","Saya adalah tipe orang yang tak kenal susah"],
+["Saya mengambil keputusan dengan cepat","Saya bicara dengan cepat"],
+["Rasanya saya bekerja secara tergesa-gesa","Saya berolahraga secara teratur"],
+["Saya tidak suka bertemu kebanyakan orang","Saya cepat merasa lelah"],
+["Saya mempunyai banyak sekali teman","Saya banyak menghabiskan waktu untuk berfikir"],
+["Saya suka bekerja dengan teori","Saya suka menangani detail suatu pekerjaan"],
+["Saya suka menangani detail suatu pekerjaan","Saya suka mengorganisir pekerjaan saya"],
+["Saya menaruh barang pada tempatnya","Saya selalu menyenangkan"],
+["Saya suka diberitahu apa yang perlu saya kerjakan","Saya harus menyelesaikan pekerjaan yang telah saya mulai"]
+];
+
+// Scoring key: [qNum1based, answerForPoint, scaleCode]
+const KEY=[
+[2,'B','N'],[13,'B','N'],[46,'B','N'],[57,'B','N'],[68,'B','N'],[79,'B','N'],[90,'B','N'],
+[1,'A','G'],[11,'A','G'],[21,'A','G'],[31,'A','G'],[41,'A','G'],[51,'A','G'],[61,'A','G'],[71,'A','G'],[80,'B','G'],
+[2,'A','A'],[14,'B','A'],[25,'B','A'],[36,'B','A'],[47,'B','A'],[58,'A','A'],[69,'B','A'],
+[5,'B','L'],[16,'B','L'],[28,'B','L'],[38,'B','L'],[49,'B','L'],[60,'B','L'],
+[17,'A','I'],[19,'B','I'],[27,'A','I'],[37,'A','I'],[43,'A','I'],[47,'A','I'],[53,'A','I'],
+[5,'A','T'],[15,'A','T'],[24,'B','T'],[35,'A','T'],[39,'B','T'],[50,'B','T'],
+[6,'A','B'],[7,'B','B'],[26,'A','B'],[29,'B','B'],[36,'A','B'],[46,'A','B'],[74,'B','B'],
+[9,'A','O'],[16,'A','O'],[29,'A','O'],[40,'B','O'],[49,'A','O'],[59,'A','O'],[70,'A','O'],
+[8,'B','X'],[27,'A','X'],[43,'A','X'],[53,'A','X'],[67,'A','X'],[75,'B','X'],[86,'B','X'],
+[3,'A','S'],[15,'B','S'],[26,'B','S'],[30,'A','S'],[48,'B','S'],[59,'B','S'],[82,'A','S'],
+[4,'A','C'],[8,'A','C'],[18,'A','C'],[20,'B','C'],[28,'A','C'],[38,'A','C'],
+[12,'B','E'],[23,'B','E'],[34,'B','E'],[56,'B','E'],[63,'B','E'],[73,'B','E'],[78,'B','E'],
+[13,'A','K'],[22,'A','K'],[32,'A','K'],[42,'A','K'],[52,'A','K'],[62,'A','K'],[70,'B','K'],[81,'B','K'],[82,'A','K'],
+[10,'A','P'],[20,'A','P'],[39,'A','P'],[40,'A','P'],[49,'A','P'],[50,'A','P'],[59,'A','P'],[69,'A','P'],[79,'A','P'],[90,'A','P'],
+[51,'B','V'],[55,'A','V'],[61,'B','V'],[64,'A','V'],[65,'A','V'],[71,'B','V'],[75,'A','V'],[84,'B','V'],
+[32,'B','W'],[43,'B','W'],[44,'B','W'],[54,'B','W'],[65,'B','W'],[76,'B','W'],[77,'B','W'],[87,'B','W'],[88,'A','W'],
+[31,'B','R'],[53,'B','R'],[67,'A','R'],[75,'B','R'],[77,'A','R'],[86,'B','R'],[87,'A','R'],
+[22,'B','D'],[33,'B','D'],[44,'B','D'],[55,'B','D'],[66,'B','D'],[77,'B','D'],[88,'B','D'],[89,'A','D'],
+[37,'A','Z'],[45,'A','Z'],[55,'A','Z'],[64,'A','Z'],[65,'A','Z'],[75,'A','Z'],[84,'B','Z'],
+[34,'A','F'],[44,'A','F'],[54,'A','F'],[61,'B','F'],[64,'A','F'],[72,'B','F'],[74,'A','F'],[83,'A','F']
+];
+
+const SCALES={
+  N:"N – Tuntas (Need to finish a task)",G:"G – Kerja Keras (Need for hard work)",
+  A:"A – Berprestasi (Need for achievement)",L:"L – Diperhatikan (Need to be noticed)",
+  I:"I – Perubahan (Need for change)",T:"T – Berkelompok (Need to belong)",
+  B:"B – Keakraban (Need for closeness)",O:"O – Status (Need for status)",
+  X:"X – Inovasi (Need for change/innovation)",S:"S – Sosial (Social extension)",
+  C:"C – Asertif (Aggressiveness)",E:"E – Kontrol Emosi (Emotional restraint)",
+  K:"K – Kepemimpinan (Leadership role)",P:"P – Aturan (Need for rules)",
+  V:"V – Vitalitas (Vigour/energy)",W:"W – Detail (Attention to detail)",
+  R:"R – Teoritis (Theoretical orientation)",D:"D – Metodis (Methodical)",
+  Z:"Z – Aktif (Need for activity)",F:"F – Tempo (Pace/speed)"
+};
+const MEANINGS={
+  N:"Menyelesaikan tugas hingga tuntas sebelum pindah ke hal lain",
+  G:"Etos kerja tinggi; tekun dan ulet dalam bekerja",
+  A:"Motivasi kuat untuk berprestasi melampaui standar",
+  L:"Membutuhkan pengakuan dan perhatian dari lingkungan",
+  I:"Menyukai fleksibilitas, variasi, dan hal-hal baru",
+  T:"Nyaman dan produktif dalam lingkungan kelompok",
+  B:"Mengutamakan hubungan personal yang hangat dan dekat",
+  O:"Berorientasi pada status sosial dan konformitas",
+  X:"Terbuka pada perubahan, inovatif, dan eksploratif",
+  S:"Mudah bergaul; jaringan sosial yang luas",
+  C:"Ekspresif dan asertif; berani menghadapi konflik",
+  E:"Mampu mengendalikan emosi; tenang di bawah tekanan",
+  K:"Jiwa pemimpin kuat; nyaman mengambil otoritas",
+  P:"Patuh pada aturan; butuh struktur dan supervisi jelas",
+  V:"Energi fisik tinggi; antusias dan tidak mudah lelah",
+  W:"Teliti dan berorientasi detail; perfeksionis",
+  R:"Berpikir konseptual; senang teori dan analisis",
+  D:"Sistematis, terencana, dan sangat terorganisir",
+  Z:"Aktif secara fisik; butuh pekerjaan yang bergerak",
+  F:"Bekerja dengan tempo cepat dan dinamis"
+};
+const ORDER=["N","G","A","L","I","T","B","O","X","S","C","E","K","P","V","W","R","D","Z","F"];
+const CATS={
+  "Kebutuhan Kerja":["N","G","A","L","I"],
+  "Orientasi Sosial":["T","B","O","X","S"],
+  "Kepribadian & Emosi":["C","E","K","P"],
+  "Gaya Kerja":["V","W","R","D","Z","F"]
+};
+
+const answers=new Array(90).fill(null);
+
+function buildQ(){
+  const w=document.getElementById('qwrap');
+  const SEGS=[[0,14,"Bagian 1 — Soal 1–15"],[15,29,"Bagian 2 — Soal 16–30"],
+              [30,44,"Bagian 3 — Soal 31–45"],[45,59,"Bagian 4 — Soal 46–60"],
+              [60,74,"Bagian 5 — Soal 61–75"],[75,89,"Bagian 6 — Soal 76–90"]];
+  let h='';
+  for(const[s,e,lb]of SEGS){
+    h+=`<div class="sec-hd"><span>${lb}</span></div>`;
+    for(let i=s;i<=e;i++){
+      const[a,b]=QQ[i];
+      h+=`<div class="qcard" id="q${i}"><div class="qtop"><span class="qnum">Soal ${i+1}</span>
+        <span class="qtick"><svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="#047857" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span></div>
+        <div class="opts">
+          <label class="opt" id="oa${i}" onclick="pick(${i},'A')"><input type="radio" name="q${i}" value="A"><div class="obadge">A</div><span class="otxt">${a}</span></label>
+          <label class="opt" id="ob${i}" onclick="pick(${i},'B')"><input type="radio" name="q${i}" value="B"><div class="obadge">B</div><span class="otxt">${b}</span></label>
+        </div></div>`;
+    }
+  }
+  w.innerHTML=h;
+}
+
+function pick(i,v){
+  answers[i]=v;
+  document.getElementById('q'+i).classList.add('ok');
+  document.getElementById('q'+i).classList.remove('err');
+  document.getElementById('oa'+i).classList.toggle('sel',v==='A');
+  document.getElementById('ob'+i).classList.toggle('sel',v==='B');
+  const d=answers.filter(x=>x).length,p=Math.round(d/90*100);
+  document.getElementById('pf').style.width=p+'%';
+  document.getElementById('pp').textContent=p+'%';
+  document.getElementById('pt').textContent=d+' / 90';
+}
+
+function submit(){
+  if(!document.getElementById('fnama').value.trim()){
+    document.getElementById('fnama').focus();
+    document.getElementById('fnama').style.borderColor='#b91c1c';
+    return;
+  }
+  const miss=[];
+  for(let i=0;i<90;i++) if(!answers[i]) miss.push(i);
+  if(miss.length){
+    miss.forEach(i=>{document.getElementById('q'+i).classList.add('err');document.getElementById('q'+i).classList.remove('ok');});
+    document.getElementById('errMsg').style.display='flex';
+    document.getElementById('errTxt').textContent='Masih ada '+miss.length+' soal yang belum dijawab.';
+    document.getElementById('q'+miss[0]).scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  showResult();
+}
+
+function computeScores(){
+  const scores={};
+  ORDER.forEach(c=>scores[c]=0);
+  const maxs={};
+  ORDER.forEach(c=>maxs[c]=0);
+  KEY.forEach(([q,a,c])=>{
+    maxs[c]=(maxs[c]||0)+1;
+    if(answers[q-1]===a) scores[c]++;
+  });
+  return{scores,maxs};
+}
+
+function interp(pct){
+  if(pct>=.8)return"Sangat Tinggi";
+  if(pct>=.6)return"Tinggi";
+  if(pct>=.4)return"Sedang";
+  if(pct>=.2)return"Rendah";
+  return"Sangat Rendah";
+}
+
+function showResult(){
+  document.getElementById('formWrap').style.display='none';
+  document.getElementById('result').style.display='block';
+  const n=document.getElementById('fnama').value.trim();
+  document.getElementById('rname').textContent='Peserta: '+n+' — semua 90 soal selesai dijawab.';
+  document.getElementById('cntA').textContent=answers.filter(x=>x==='A').length;
+  document.getElementById('cntB').textContent=answers.filter(x=>x==='B').length;
+  let chips='';
+  for(let i=0;i<90;i++) chips+=`<div class="ac"><span class="cn">${i+1}</span><span class="cv">${answers[i]}</span></div>`;
+  document.getElementById('ag').innerHTML=chips;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function dlExcel(){
+  const n=document.getElementById('fnama').value.trim()||'Peserta';
+  const tgl=document.getElementById('ftgl').value||new Date().toISOString().split('T')[0];
+  const posisi=document.getElementById('fposisi').value.trim()||'-';
+  const asses=document.getElementById('fassessor').value.trim()||'-';
+  const{scores,maxs}=computeScores();
+  const wb=XLSX.utils.book_new();
+
+  // ── Sheet 1: Jawaban
+  const jawData=[["No.","Jawaban","Pernyataan A","Pernyataan B"]];
+  for(let i=0;i<90;i++) jawData.push([i+1,answers[i],QQ[i][0],QQ[i][1]]);
+  const wsJ=XLSX.utils.aoa_to_sheet(jawData);
+  wsJ['!cols']=[{wch:5},{wch:10},{wch:45},{wch:45}];
+  XLSX.utils.book_append_sheet(wb,wsJ,"Jawaban");
+
+  // ── Sheet 2: Identitas
+  const idData=[
+    ["Field","Isian"],["Nama Lengkap",n],["Tanggal Tes",tgl],
+    ["Posisi / Jabatan",posisi],["Assessor",asses]
+  ];
+  const wsId=XLSX.utils.aoa_to_sheet(idData);
+  wsId['!cols']=[{wch:20},{wch:40}];
+  XLSX.utils.book_append_sheet(wb,wsId,"Identitas");
+
+  // ── Sheet 3: Skor
+  const scHeader=["Kode","Nama Skala","Kategori","Skor","Maks","Persen (%)","Interpretasi","Deskripsi"];
+  const scRows=[scHeader];
+  let prevCat='';
+  for(const code of ORDER){
+    let cat='';
+    for(const[c,arr]of Object.entries(CATS)) if(arr.includes(code)){cat=c;break;}
+    if(cat!==prevCat){
+      scRows.push([cat,'','','','','','','']);
+      prevCat=cat;
+    }
+    const sc=scores[code],mx=maxs[code],pct=mx>0?sc/mx:0;
+    scRows.push([code,SCALES[code],cat,sc,mx,Math.round(pct*1000)/10,interp(pct),MEANINGS[code]]);
+  }
+  const wsSc=XLSX.utils.aoa_to_sheet(scRows);
+  wsSc['!cols']=[{wch:6},{wch:34},{wch:22},{wch:7},{wch:7},{wch:12},{wch:16},{wch:50}];
+  XLSX.utils.book_append_sheet(wb,wsSc,"Skor");
+
+  // ── Sheet 4: Grafik data (chart source)
+  const grHeader=["Kode","Nama Singkat","Skor","Maks","Persen (%)","Interpretasi"];
+  const grRows=[grHeader];
+  for(const code of ORDER){
+    const sc=scores[code],mx=maxs[code],pct=mx>0?sc/mx:0;
+    grRows.push([code,code+" – "+SCALES[code].split("(")[0].trim(),sc,mx,Math.round(pct*1000)/10,interp(pct)]);
+  }
+  const wsGr=XLSX.utils.aoa_to_sheet(grRows);
+  wsGr['!cols']=[{wch:6},{wch:34},{wch:7},{wch:7},{wch:12},{wch:16}];
+  XLSX.utils.book_append_sheet(wb,wsGr,"Grafik Data");
+
+  // ── Sheet 5: Summary
+  const smRows=[
+    ["LAPORAN RINGKAS — PROFIL KEPRIBADIAN PAPI KOSTICK"],[""],
+    ["Peserta:",n],["Tanggal:",tgl],["Posisi:",posisi],["Assessor:",asses],[""],
+    ["PROFIL 20 SKALA"],
+    ["Kode","Nama Skala","Kategori","Skor","Maks","Persen (%)","Interpretasi","Deskripsi"],
+  ];
+  prevCat='';
+  for(const code of ORDER){
+    let cat='';
+    for(const[c,arr]of Object.entries(CATS)) if(arr.includes(code)){cat=c;break;}
+    if(cat!==prevCat){smRows.push(['--- '+cat+' ---','','','','','','','']);prevCat=cat;}
+    const sc=scores[code],mx=maxs[code],pct=mx>0?sc/mx:0;
+    smRows.push([code,SCALES[code],cat,sc,mx,Math.round(pct*1000)/10,interp(pct),MEANINGS[code]]);
+  }
+  smRows.push([''],['PANDUAN INTERPRETASI'],
+    ['Sangat Tinggi','≥ 80%','Sangat dominan — ciri khas utama kepribadian'],
+    ['Tinggi','60–79%','Menonjol — aspek yang konsisten muncul dalam perilaku'],
+    ['Sedang','40–59%','Moderat — bergantung pada konteks dan situasi'],
+    ['Rendah','20–39%','Kurang dominan — bukan preferensi utama'],
+    ['Sangat Rendah','< 20%','Sangat lemah — area yang perlu dikembangkan']
+  );
+  const wsSm=XLSX.utils.aoa_to_sheet(smRows);
+  wsSm['!cols']=[{wch:6},{wch:34},{wch:22},{wch:7},{wch:7},{wch:12},{wch:16},{wch:50}];
+  XLSX.utils.book_append_sheet(wb,wsSm,"Summary");
+
+  const slug=n.replace(/\s+/g,'_');
+  XLSX.writeFile(wb,`PAPI_Kostick_${slug}_Hasil.xlsx`);
+}
+
+function resetAll(){
+  answers.fill(null);
+  document.getElementById('result').style.display='none';
+  document.getElementById('formWrap').style.display='block';
+  document.getElementById('errMsg').style.display='none';
+  ['fnama','ftgl','fposisi','fassessor'].forEach(id=>document.getElementById(id).value='');
+  buildQ();
+  document.getElementById('pf').style.width='0%';
+  document.getElementById('pp').textContent='0%';
+  document.getElementById('pt').textContent='0 / 90';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+buildQ();
+</script>
+</body>
+</html>
